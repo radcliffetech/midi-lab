@@ -79,6 +79,9 @@ function updateKey() {
   const mode = modeSelect.value;
   rootLabel.textContent = root;
   setKey(root, mode);
+  // Persist root and mode to localStorage
+  localStorage.setItem('root', rootSlider.value);
+  localStorage.setItem('mode', modeSelect.value);
 }
 
 // --- MIDI Setup ---
@@ -220,6 +223,30 @@ window.addEventListener('resize', () => {
 // Attach event listeners to UI controls for key changes
 rootSlider.addEventListener('input', updateKey);
 modeSelect.addEventListener('change', updateKey);
+
+// Highlight toggle and controls fieldset
+const highlightToggle = document.getElementById('highlightToggle') as HTMLInputElement;
+const controlsFieldset = document.getElementById('controlsFieldset') as HTMLFieldSetElement;
+
+// Add event listener for highlight toggle, with persistence
+highlightToggle.addEventListener('change', () => {
+  enableKeyHighlighting = highlightToggle.checked;
+  if (controlsFieldset) controlsFieldset.disabled = !highlightToggle.checked;
+  localStorage.setItem('highlight', enableKeyHighlighting ? 'true' : 'false');
+});
+
+// --- Restore persisted settings before first updateKey() ---
+const savedRoot = localStorage.getItem('root');
+const savedMode = localStorage.getItem('mode');
+const savedHighlight = localStorage.getItem('highlight');
+
+if (savedRoot !== null) rootSlider.value = savedRoot;
+if (savedMode !== null) modeSelect.value = savedMode;
+if (savedHighlight !== null) {
+  highlightToggle.checked = (savedHighlight === 'true');
+  enableKeyHighlighting = highlightToggle.checked;
+  if (controlsFieldset) controlsFieldset.disabled = !highlightToggle.checked;
+}
 
 // Initial setup calls
 updateKey();
