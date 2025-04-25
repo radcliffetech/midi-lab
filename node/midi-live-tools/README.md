@@ -16,8 +16,23 @@ Each tool is a standalone HTML+TS+CSS interface:
 |-------------------|-----------------------------------------------------|
 | 🎛 Monitor         | Real-time logging of incoming MIDI messages         |
 | 🎹 Visualizer      | Keyboard layout with glowing notes                 |
-| 🎶 Chord Analyzer  | Detects held chord names in real time              |
-| 🌀 Spiral Viewer   | Animated spiral note display with ghost trails     |
+| 🌀 Spiral Viewer   | Animated spiral note display with fading ghost trails |
+| 🥁 Drum Pad        | Clickable drum grid that sends live MIDI output      |
+| 📊 Histogram       | Live note frequency histogram from input stream     |
+
+### ⚡ Setup and Run
+
+To get started locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+
+# Open your browser at http://localhost:5173
+```
 
 ### 📁 Path
 
@@ -27,10 +42,26 @@ node/midi-live-tools/
 
 ### ✅ Features
 
-- No backend required – pure browser WebMIDI
-- Plug in any controller or virtual cable (e.g. IAC, LoopMIDI)
-- Pulsing, glowing canvas notes
-- Live chord detection
-- Spiral art-style visualizer
-- Bootstrap-powered layout
-- Fully TypeScript + Vite
+- No backend required – pure browser WebMIDI magic
+- Live MIDI input *and* output (drum pad sends real MIDI notes)
+- Dynamic spiral visualizer with note ghosting and key highlighting
+- Responsive Bootstrap layouts
+- MIDI device selection menus
+- Real-time MIDI message logging
+- Playable browser-based MIDI drum pad (works with DAWs!)
+- TypeScript + Vite project structure for rapid loading and development
+
+
+
+This uses Vite for fast reloading during development.  
+Ensure you use a Chromium-based browser (like Chrome) to enable WebMIDI support.
+
+### 🚀 Why This Project Matters
+
+This project showcases real-time audio interaction, Web API mastery, TypeScript architecture, and dynamic UI design — all without needing server infrastructure.
+
+**Perfect for:**
+- Music tech startups
+- Browser-based creative tools
+- WebMIDI-enabled product demos
+- Interactive sound experiments
