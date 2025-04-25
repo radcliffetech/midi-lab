@@ -22,7 +22,7 @@ for (let note = 21; note <= 108; note++) {
 function updateDisplay() {
   const sortedNotes = Array.from(activeNotes).sort((a, b) => a - b);
   const names = sortedNotes.map((n) => midiNoteName(n)).join(', ');
-  activeNotesDisplay.textContent = `🎵 Active Notes: ${names}`;
+  activeNotesDisplay.textContent = `${names}`;
   chordDisplay.textContent = detectChord(sortedNotes) ?? '–';
 }
 
