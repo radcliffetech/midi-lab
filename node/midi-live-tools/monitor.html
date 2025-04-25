@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MIDI Live Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  </head>
+  <body class="bg-dark text-light p-4">
+    <div class="container">
+      <h1 class="text-center text-info mb-4">🎹 MIDI Live Monitor</h1>
+
+      <div id="control-box" class="card bg-secondary text-light mb-4 p-3">
+        <div class="mb-2">
+          <label for="midi-select" class="form-label">Select MIDI Input:</label>
+          <select id="midi-select" class="form-select">
+            <option value="">-- Select a MIDI Input --</option>
+          </select>
+        </div>
+        <button id="start-stop" class="btn btn-info mb-2">Start</button>
+        <div id="status" class="fst-italic"></div>
+      </div>
+
+      <div id="output-container" class="table-responsive bg-secondary p-2 rounded" style="height: 400px; overflow-y: auto;">
+        <table id="output" class="table table-sm table-dark table-striped mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Device</th>
+              <th>Message</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <script type="module" src="/src/monitor.ts"></script>
+  </body>
+</html>
