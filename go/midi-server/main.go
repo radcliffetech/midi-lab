@@ -1,3 +1,6 @@
+// midi-server: A Go server that connects MIDI input/output with WebSocket clients.
+// It sends and receives MIDI note messages and allows scene-based cue broadcasts.
+
 package main
 
 import (
@@ -12,6 +15,8 @@ import (
 	"gitlab.com/gomidi/midi/writer"
 	"gitlab.com/gomidi/portmididrv"
 )
+
+// --- Global Variables ---
 
 var clients = make(map[*websocket.Conn]chan interface{}) // Connected clients with send channels
 var broadcast = make(chan MIDIMessage)                   // MIDI messages to broadcast
@@ -43,6 +48,8 @@ type BulkLabelUpdateMessage struct {
 	Labels map[uint8]string `json:"labels"`
 }
 
+// --- Scene Definitions ---
+
 type Scene struct {
 	Cue    string
 	Labels map[uint8]string
@@ -50,70 +57,58 @@ type Scene struct {
 
 var scenes = []Scene{
 	{
-		Cue: "Welcome to the MIDI Controller!",
+		Cue: "🎛️ Welcome to the MIDI Control Prototype!",
 		Labels: map[uint8]string{
-			60: "C$", 62: "D4", 64: "E4", 65: "F4", 67: "G4", 69: "G4", 71: "A4", 72: "B4", 74: "C5",
+			60: "WebSocket", 62: "MIDI", 64: "Realtime", 65: "Client", 67: "Server", 69: "Scene", 71: "Cue", 72: "Pad", 74: "Control",
 		},
 	},
 	{
-		Cue: "🎵 Scene 1: Warmup",
+		Cue: "🌐 Powered by Go and Web Technologies",
 		Labels: map[uint8]string{
-			60: "Kick", 62: "Snare", 64: "Hat", 65: "Tom", 67: "Bass", 69: "Synth", 71: "Pad", 72: "Lead", 74: "FX",
+			60: "GoLang", 62: "HTTP", 64: "WebSocket", 65: "MIDI I/O", 67: "Frontend", 69: "Backend", 71: "PortMidi", 72: "Bootstrap", 74: "Gorilla",
 		},
 	},
 	{
-		Cue: "🔥 Scene 2: Chorus",
+		Cue: "🎶 Designed for Live Interaction",
 		Labels: map[uint8]string{
-			60: "Boom", 62: "Clap", 64: "Shaker", 65: "808", 67: "Sub", 69: "Keys", 71: "Strings", 72: "Vox", 74: "Noise",
+			60: "Touch", 62: "Buttons", 64: "LED", 65: "Cue", 67: "Velocity", 69: "Scenes", 71: "Next", 72: "Advance", 74: "Update",
 		},
 	},
 	{
-		Cue: "🚀 Scene 3: Drop!",
+		Cue: "🚀 Prototype for Future Expansion",
 		Labels: map[uint8]string{
-			60: "Kick+", 62: "Snare+", 64: "Hat+", 65: "Synth+", 67: "Bass+", 69: "FX+", 71: "Riser", 72: "Drop", 74: "Impact",
-		},
-	},
-	{
-		Cue: "🌌 Scene 4: Outro",
-		Labels: map[uint8]string{
-			60: "Fade", 62: "Echo", 64: "Reverb", 65: "Chill", 67: "Ambient", 69: "Vibe", 71: "Outro", 72: "Goodbye", 74: "Silence",
+			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime", 74: "AI",
 		},
 	},
 }
 
 var currentScene int
 
+// --- Scene Broadcasting ---
+
 func broadcastScene() {
 	scene := scenes[currentScene%len(scenes)]
 	currentScene++
 
 	log.Printf("Broadcasting scene: %s\n", scene.Cue)
-	// Broadcast cue
+
+	// Broadcast cue message to all clients
 	cue := CueMessage{Type: "cue", Text: scene.Cue}
 	for client, send := range clients {
 		select {
 		case send <- cue:
 		default:
+			// If send channel is blocked, close and remove client
 			close(send)
 			delete(clients, client)
 		}
 	}
-
-	// // Broadcast labels
-	// update := BulkLabelUpdateMessage{Type: "bulkUpdateLabels", Labels: scene.Labels}
-
-	// for client, send := range clients {
-	// 	select {
-	// 	case send <- update:
-	// 	default:
-	// 		close(send)
-	// 		delete(clients, client)
-	// 	}
-	// }
 }
 
+// --- Main Server Setup ---
+
 func main() {
-	// Initialize the MIDI driver
+	// Initialize MIDI output driver
 	drv, err := portmididrv.New()
 	if err != nil {
 		log.Fatal(err)
@@ -124,7 +119,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Find and open the IAC Driver
+	// Find and open the IAC Driver output port
 	found := false
 	for _, o := range outs {
 		if o.String() == "IAC Driver Bus 1" {
@@ -141,22 +136,33 @@ func main() {
 		log.Fatal("IAC Driver not found")
 	}
 
-	// Start WebSocket broadcaster
+	// Start WebSocket broadcaster goroutine
 	go handleMessages()
 
-	// Setup HTTP server
+	// Setup HTTP server and WebSocket handling
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", handleConnections)
 
-	// Start listening for incoming MIDI
+	// Start listening for incoming MIDI input
 	go listenToMIDI()
+
+	// Periodically broadcast scenes every 5 seconds
+	go func() {
+		for {
+			time.Sleep(5 * time.Second)
+			broadcastScene()
+		}
+	}()
 
 	fmt.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+// --- WebSocket Connection Handling ---
+
 func handleConnections(w http.ResponseWriter, r *http.Request) {
+	// Accept new WebSocket connections
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // Allow all origins
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -166,6 +172,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	send := make(chan interface{})
 	clients[ws] = send
 
+	// Goroutine to write messages to WebSocket client
 	go func() {
 		for msg := range send {
 			err := ws.WriteJSON(msg)
@@ -178,6 +185,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// Read incoming WebSocket messages
 	for {
 		var rawMsg map[string]interface{}
 		err := ws.ReadJSON(&rawMsg)
@@ -187,18 +195,38 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			delete(clients, ws)
 			break
 		}
+
 		if msgType, ok := rawMsg["type"].(string); ok && msgType == "nextScene" {
 			log.Println("Received nextScene request from client.")
 			broadcastScene()
 			continue
 		} else if msgType == "note" {
-			// Reconstruct a MIDIMessage and send to broadcast
-			note := uint8(rawMsg["note"].(float64))
-			velocity := uint8(rawMsg["velocity"].(float64))
-			broadcast <- MIDIMessage{Type: "note", Note: note, Velocity: velocity}
+			log.Println("Received 'note' message from client:", rawMsg)
+
+			noteRaw, noteOk := rawMsg["note"]
+			velocityRaw, velocityOk := rawMsg["velocity"]
+
+			if !noteOk || !velocityOk {
+				log.Println("Malformed 'note' message: missing fields")
+				continue
+			}
+
+			note, noteCastOk := noteRaw.(float64)
+			velocity, velocityCastOk := velocityRaw.(float64)
+
+			if !noteCastOk || !velocityCastOk {
+				log.Println("Malformed 'note' message: fields not numbers")
+				continue
+			}
+
+			log.Printf("Parsed Note: %d, Velocity: %d\n", uint8(note), uint8(velocity))
+			broadcast <- MIDIMessage{Type: "note", Note: uint8(note), Velocity: uint8(velocity)}
 		}
 	}
+
 }
+
+// --- Message Broadcasting to Clients ---
 
 func handleMessages() {
 	for {
@@ -206,7 +234,7 @@ func handleMessages() {
 		log.Printf("Broadcasting Note: %d Velocity: %d\n", msg.Note, msg.Velocity)
 
 		if msg.Type == "note" {
-			// Send to IAC Driver
+			// Send MIDI NoteOn to output device
 			if midiWriter != nil {
 				err := writer.NoteOn(midiWriter, msg.Note, msg.Velocity)
 				if err != nil {
@@ -224,16 +252,20 @@ func handleMessages() {
 			}
 		}
 
+		// Broadcast message to all connected clients
 		for client, send := range clients {
 			select {
 			case send <- msg:
 			default:
+				// If send channel is blocked, close and remove client
 				close(send)
 				delete(clients, client)
 			}
 		}
 	}
 }
+
+// --- Listening to Incoming MIDI Notes ---
 
 func listenToMIDI() {
 	drv, err := portmididrv.New()
@@ -251,12 +283,14 @@ func listenToMIDI() {
 		log.Fatal("No MIDI input devices found.")
 	}
 
+	// Open first available MIDI input
 	in := ins[0]
 	if err := in.Open(); err != nil {
 		log.Fatal(err)
 	}
 	defer in.Close()
 
+	// Setup reader to broadcast NoteOn events
 	rdr := reader.New(
 		reader.NoteOn(func(pos *reader.Position, channel, key, velocity uint8) {
 			log.Printf("NoteOn: Channel %d, Key %d, Velocity %d", channel, key, velocity)
