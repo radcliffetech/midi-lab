@@ -1,6 +1,8 @@
-# 🎛️ MIDI Lab
+# 🎛️ Jeffrey's MIDI Lab
 
 A collection of MIDI tools written in Go and Node.js for converting, transforming, and generating MIDI data.
+
+Includes converters, servers, visualizers, and more.
 
 ## 📁 Structure
 
