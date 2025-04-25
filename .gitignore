@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+dist/
+
+# Go
+bin/
+*.exe
+*.test
+
+# System
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
