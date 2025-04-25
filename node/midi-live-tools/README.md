@@ -20,6 +20,20 @@ Each tool is a standalone HTML+TS+CSS interface:
 | 🥁 Drum Pad        | Clickable drum grid that sends live MIDI output      |
 | 📊 Histogram       | Live note frequency histogram from input stream     |
 
+### ⚡ Setup and Run
+
+To get started locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+
+# Open your browser at http://localhost:5173
+```
+
 ### 📁 Path
 
 ```bash
@@ -36,6 +50,11 @@ node/midi-live-tools/
 - Real-time MIDI message logging
 - Playable browser-based MIDI drum pad (works with DAWs!)
 - TypeScript + Vite project structure for rapid loading and development
+
+
+
+This uses Vite for fast reloading during development.  
+Ensure you use a Chromium-based browser (like Chrome) to enable WebMIDI support.
 
 ### 🚀 Why This Project Matters
 
