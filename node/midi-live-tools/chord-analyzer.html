@@ -16,17 +16,20 @@
           <a class="navbar-brand" href="/index.html">MIDI Live Tools</a>
         </div>
       </nav>
-    <h1 class="text-center mb-4">MIDI Chord Analyzer</h1>
-    <div id="status" class="text-center text-secondary mb-3 fst-italic">
+      <div class="container">
+    <h1 class="mb-4">Chord Analyzer</h1>
+    <div id="status" class="text-end text-muted mb-3">
       Connecting to MIDI...
     </div>
-    <div id="keyboard" class="keyboard mb-4"></div>
     <div class="flex justify-content-center mb-3">
-    <div
-      id="active-notes"
-      class="text-center mb-2"
-    ></div>
-    <div id="chord-display" class="text-center fs-3 display-2"></div>
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 mb-3" style="height: 80px;">
+        <div id="active-notes" class="text-start fw-medium"></div>
+        <div id="chord-display" class="text-end fs-3 fw-bold"></div>
+      </div>
+      <div id="keyboard" class="keyboard py-4 mb-4"></div>
+      <div id="keyboard" class="keyboard py-4 mb-4"></div>
     </div>
+  </div>
   </body>
+
 </html>
