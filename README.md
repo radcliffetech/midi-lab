@@ -14,3 +14,7 @@ A collection of MIDI tools written in Go and Node.js for converting, transformin
 - Showcase polyglot coding (Go + Node.js)
 - Highlight MIDI processing expertise
 - Offer useful open-source tools for musicians and developers
+
+## License
+
+- MIT License
