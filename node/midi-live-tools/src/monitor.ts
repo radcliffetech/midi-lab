@@ -34,12 +34,12 @@ let currentInput: MIDIInput | null = null;
 async function initMIDI() {
   try {
     const access = await navigator.requestMIDIAccess();
-    log("system", "✅ MIDI access granted");
+    log('system', '✅ MIDI access granted');
 
     populateInputOptions(access);
 
     access.onstatechange = (e) => {
-      log("system", `🔌 Device ${e.port?.name} ${e.port?.state}`);
+      log('system', `🔌 Device ${e.port?.name} ${e.port?.state}`);
       populateInputOptions(access);
     };
 
@@ -51,7 +51,9 @@ async function initMIDI() {
       }
 
       const selectedId = select.value;
-      const newInput = Array.from(access.inputs.values()).find(i => i.id === selectedId);
+      const newInput = Array.from(access.inputs.values()).find(
+        (i) => i.id === selectedId
+      );
 
       if (newInput) {
         currentInput = newInput;
@@ -59,7 +61,7 @@ async function initMIDI() {
       }
     });
   } catch (err) {
-    log("system", "❌ Could not access MIDI devices");
+    log('system', '❌ Could not access MIDI devices');
     console.error(err);
   }
 }
@@ -91,7 +93,7 @@ function populateInputOptions(access: MIDIAccess) {
 }
 
 function selectInputById(id: string, access: MIDIAccess) {
-  const input = Array.from(access.inputs.values()).find(i => i.id === id);
+  const input = Array.from(access.inputs.values()).find((i) => i.id === id);
   if (input) {
     currentInput = input;
     updateStatus(`Ready to start: ${input.name}`);
@@ -106,12 +108,12 @@ let isRunning = false;
 
 startStopBtn.addEventListener('click', () => {
   if (!currentInput) {
-    updateStatus("⚠️ No MIDI input selected");
+    updateStatus('⚠️ No MIDI input selected');
     return;
   }
 
   if (!isRunning) {
-    startStopBtn.textContent = "Stop";
+    startStopBtn.textContent = 'Stop';
     updateStatus(`🎛 Listening to: ${currentInput.name}`);
     currentInput.onmidimessage = (e) => {
       if (!e.data || e.data.length < 3) return;
@@ -133,7 +135,7 @@ startStopBtn.addEventListener('click', () => {
     };
     isRunning = true;
   } else {
-    startStopBtn.textContent = "Start";
+    startStopBtn.textContent = 'Start';
     updateStatus(`Paused: ${currentInput.name}`);
     if (currentInput) {
       currentInput.onmidimessage = null;
@@ -144,7 +146,20 @@ startStopBtn.addEventListener('click', () => {
 
 initMIDI();
 function getNoteName(noteNumber: number): string {
-  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const notes = [
+    'C',
+    'C#',
+    'D',
+    'D#',
+    'E',
+    'F',
+    'F#',
+    'G',
+    'G#',
+    'A',
+    'A#',
+    'B',
+  ];
   const note = notes[noteNumber % 12];
   const octave = Math.floor(noteNumber / 12) - 1;
   return `${note}${octave}`;

@@ -1,17 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Chord Analyzer</title>
     <script type="module" src="/src/chord-analyzer.ts"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body class="bg-dark text-light">
     <h1 class="text-center text-info">🎼 MIDI Chord Analyzer</h1>
-    <div id="status" class="text-center text-secondary mb-3 fst-italic">Connecting to MIDI...</div>
+    <div id="status" class="text-center text-secondary mb-3 fst-italic">
+      Connecting to MIDI...
+    </div>
     <div id="keyboard" class="keyboard mb-4"></div>
-    <div id="active-notes" class="text-center mb-2" style="font-family: monospace;"></div>
+    <div
+      id="active-notes"
+      class="text-center mb-2"
+      style="font-family: monospace"
+    ></div>
     <div id="chord-display" class="text-center fs-3 text-warning"></div>
   </body>
 </html>

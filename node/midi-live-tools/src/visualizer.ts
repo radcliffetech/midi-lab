@@ -1,5 +1,3 @@
-
-
 const keyboard = document.getElementById('keyboard')!;
 
 // Create keys (MIDI note numbers 21–108)
@@ -30,14 +28,14 @@ async function initMIDI() {
       }
     };
   } catch (err) {
-    console.error("MIDI init error", err);
+    console.error('MIDI init error', err);
   }
 }
 
 function handleMIDIMessage(event: MIDIMessageEvent) {
-    const data = event.data;
-    if (!data || data.length < 3) return;
-    const [status, note, velocity] = data;
+  const data = event.data;
+  if (!data || data.length < 3) return;
+  const [status, note, velocity] = data;
   const command = status & 0xf0;
 
   if (command === 0x90 && velocity > 0) {
