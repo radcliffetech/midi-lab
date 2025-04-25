@@ -1,28 +1,21 @@
 // src/lib/midi-utils.ts
 
+// --- Note utilities ---
+
 export function midiNoteName(n: number): string {
-  const names = [
-    'C',
-    'C#',
-    'D',
-    'D#',
-    'E',
-    'F',
-    'F#',
-    'G',
-    'G#',
-    'A',
-    'A#',
-    'B',
-  ];
+  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   return names[n % 12] + Math.floor(n / 12 - 1);
 }
 
+export function getNoteName(n: number): string {
+  return `${midiNoteName(n)} (${n})`;
+}
+
+// --- Chord detection ---
+
 export function detectChord(notes: number[]): string | null {
   if (notes.length < 3) return null;
-  const pitchClasses = [...new Set(notes.map((n) => n % 12))].sort(
-    (a, b) => a - b
-  );
+  const pitchClasses = [...new Set(notes.map((n) => n % 12))].sort((a, b) => a - b);
 
   const chordTypes: [string, number[]][] = [
     ['Major', [0, 4, 7]],
@@ -38,12 +31,11 @@ export function detectChord(notes: number[]): string | null {
   ];
 
   for (let root = 0; root < 12; root++) {
-    const rotated = pitchClasses
-      .map((pc) => (pc - root + 12) % 12)
-      .sort((a, b) => a - b);
+    const rotated = pitchClasses.map((pc) => (pc - root + 12) % 12).sort((a, b) => a - b);
     for (const [name, shape] of chordTypes) {
       if (shape.every((x) => rotated.includes(x))) {
-        return `${midiNoteName(root)} ${name}`;
+        const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        return `${names[root]} ${name}`;
       }
     }
   }
@@ -51,11 +43,26 @@ export function detectChord(notes: number[]): string | null {
   return null;
 }
 
+// --- Array utilities ---
 
-export function getNoteName(n: number): string {
-  return `${midiNoteName(n)} (${n})`;
+function rotateInput(inputArray: number[], rotationAmount: number): number[] {
+  const outputArray = new Array(inputArray.length);
+  for (let i = 0; i < inputArray.length; i++) {
+    const newIndex = (i - rotationAmount + inputArray.length) % inputArray.length;
+    outputArray[newIndex] = inputArray[i];
+  }
+  return outputArray;
 }
-function correlate(a: number[], b: number[]): number {
+
+export function rotateForward(inputArray: number[], rotationAmount: number): number[] {
+  return rotateInput(inputArray, -rotationAmount);
+}
+
+export function rotateBackward(inputArray: number[], rotationAmount: number): number[] {
+  return rotateInput(inputArray, rotationAmount);
+}
+
+export function correlate(a: number[], b: number[]): number {
   const meanA = a.reduce((sum, v) => sum + v, 0) / a.length;
   const meanB = b.reduce((sum, v) => sum + v, 0) / b.length;
 
@@ -74,24 +81,25 @@ function correlate(a: number[], b: number[]): number {
   return numerator / Math.sqrt(denomA * denomB);
 }
 
+// --- Key detection ---
+
 export function detectKey(pitchClassCounts: number[]): { key: string, confidence: number } {
   const majorProfile = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
   const minorProfile = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 
   let bestScore = -Infinity;
   let bestKey = '';
-  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
   for (let i = 0; i < 12; i++) {
-    const rotateInput = (arr: number[]) => arr.map((_, j) => arr[(j - i + 12) % 12]);
-
-    const majorScore = correlate(rotateInput(pitchClassCounts), majorProfile);
+    const rotatedInput = rotateForward(pitchClassCounts, i);
+    const majorScore = correlate(rotatedInput, majorProfile);
     if (majorScore > bestScore) {
       bestScore = majorScore;
       bestKey = `${names[i]} Major`;
     }
 
-    const minorScore = correlate(rotateInput(pitchClassCounts), minorProfile);
+    const minorScore = correlate(rotatedInput, minorProfile);
     if (minorScore > bestScore) {
       bestScore = minorScore;
       bestKey = `${names[i]} Minor`;

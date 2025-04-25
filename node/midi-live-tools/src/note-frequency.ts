@@ -13,7 +13,7 @@ const chart = new Chart(ctx, {
             label: 'Note Count',
             data: noteCounts,
             backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        }]
+        }]  
     },
     options: {
         responsive: true,
@@ -23,6 +23,11 @@ const chart = new Chart(ctx, {
             },
             y: {
                 beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
             }
         }
     }
@@ -37,7 +42,7 @@ function handleMIDIMessage(e: MIDIMessageEvent) {
         noteCounts[note]++;
         chart.update();
 
-        const pitchClassCounts = new Array(12).fill(0);
+        const pitchClassCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         for (let i = 0; i < 128; i++) {
           pitchClassCounts[i % 12] += noteCounts[i];
         }

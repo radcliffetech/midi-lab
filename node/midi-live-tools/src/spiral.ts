@@ -1,4 +1,14 @@
 // spiral.ts
+const BASE_RADIUS = 15;
+const SPACING = 10;
+const ANGLE_STEP = 0.35;
+const DEFAULT_PULSE = 6.4;
+const ACTIVE_PULSE_AMPLITUDE = 2;
+const SHADOW_BLUR = 15;
+
+const MIDI_START = 21; // A0
+const MIDI_END = 108;  // C8
+
 const canvas = document.getElementById('spiral-canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 canvas.width = window.innerWidth * 0.8;
@@ -10,13 +20,12 @@ const activeNotes = new Set<number>();
 window.addEventListener('resize', () => {
   canvas.width = window.innerWidth * 0.8;
   canvas.height = window.innerHeight * 0.8;
+  activeNotes.clear();
 });
 
 function drawSpiral() {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
-  const baseRadius = 15;
-  const spacing = 10;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
@@ -24,22 +33,24 @@ function drawSpiral() {
 
   const time = performance.now();
 
-  for (let i = 0; i < 88; i++) {
-    const note = i + 21;
-    const angle = i * 0.35;
-    const radius = baseRadius + spacing * angle;
+  for (let midiNote = MIDI_START; midiNote <= MIDI_END; midiNote++) {
+    const i = midiNote - MIDI_START;
+    const angle = i * ANGLE_STEP;
+    const radius = BASE_RADIUS + SPACING * angle;
 
     const x = centerX + Math.cos(angle) * radius;
     const y = centerY + Math.sin(angle) * radius;
 
-    const hue = (note % 12) * 30;
+    const hue = (midiNote % 12) * 30;
 
-    const isActive = activeNotes.has(note);
-    const pulse = isActive ? (Math.sin(time / 100 + note) * 2 + 6.4) : 6.4;
+    const isActive = activeNotes.has(midiNote);
+    const pulse = isActive
+      ? Math.sin(time / 100 + midiNote) * ACTIVE_PULSE_AMPLITUDE + DEFAULT_PULSE
+      : DEFAULT_PULSE;
 
     ctx.beginPath();
     ctx.shadowColor = isActive ? `hsl(${hue}, 100%, 70%)` : 'transparent';
-    ctx.shadowBlur = isActive ? 15 : 0;
+    ctx.shadowBlur = isActive ? SHADOW_BLUR : 0;
     ctx.arc(x, y, pulse, 0, Math.PI * 2);
     ctx.fillStyle = isActive ? `hsl(${hue}, 100%, 60%)` : '#cccccc';
     ctx.fill();
