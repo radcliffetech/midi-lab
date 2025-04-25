@@ -19,6 +19,10 @@ function drawSpiral() {
   const spacing = 10;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const time = performance.now();
 
   for (let i = 0; i < 88; i++) {
     const note = i + 21;
@@ -28,10 +32,18 @@ function drawSpiral() {
     const x = centerX + Math.cos(angle) * radius;
     const y = centerY + Math.sin(angle) * radius;
 
+    const hue = (note % 12) * 30;
+
+    const isActive = activeNotes.has(note);
+    const pulse = isActive ? (Math.sin(time / 100 + note) * 2 + 6.4) : 6.4;
+
     ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
-    ctx.fillStyle = activeNotes.has(note) ? '#ff3366' : '#cccccc';
+    ctx.shadowColor = isActive ? `hsl(${hue}, 100%, 70%)` : 'transparent';
+    ctx.shadowBlur = isActive ? 15 : 0;
+    ctx.arc(x, y, pulse, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? `hsl(${hue}, 100%, 60%)` : '#cccccc';
     ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
   requestAnimationFrame(drawSpiral);
