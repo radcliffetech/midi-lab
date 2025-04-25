@@ -1,4 +1,5 @@
 import Chart from 'chart.js/auto';
+import { detectKey } from './lib/midi-utils';
 
 const ctx = document.getElementById('noteChart') as HTMLCanvasElement;
 const noteCounts = new Array(128).fill(0);
@@ -35,6 +36,13 @@ function handleMIDIMessage(e: MIDIMessageEvent) {
     if (cmd === 0x90 && velocity > 0) {
         noteCounts[note]++;
         chart.update();
+
+        const pitchClassCounts = new Array(12).fill(0);
+        for (let i = 0; i < 128; i++) {
+          pitchClassCounts[i % 12] += noteCounts[i];
+        }
+        const key = detectKey(pitchClassCounts);
+        document.getElementById('keyOutput')!.textContent = key;
     }
 }
 
@@ -61,4 +69,5 @@ document.getElementById('resetButton')?.addEventListener('click', () => {
         noteCounts[i] = 0;
     }
     chart.update();
+    document.getElementById('keyOutput')!.textContent = '–';
 });
