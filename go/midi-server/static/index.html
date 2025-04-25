@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+T<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>MIDI Live</title>
@@ -52,13 +52,14 @@
     </div>
     <div id="led" style="width: 30px; height: 30px; background-color: #ccc; border-radius: 50%; box-shadow: 0 0 5px #999;"></div>
   </div>
-  <div className="my-2">
-    <p class="text-muted small mb-0">A browser-based MIDI controller demonstrating real-time WebSocket communication and MIDI output to DAWs like Ableton Live.</p>
-    <p class="text-muted small mb-0">Prototype for live performance and audience interaction applications.</p>
+  <div id="cueDisplay" class="text-center my-3 fs-5 text-primary"></div>
+  <div class="text-center my-3">
+    <button id="nextSceneBtn" class="btn btn-success">Next Scene</button>
   </div>
   <div class="row row-cols-2 row-cols-md-3 my-2 g-3" id="padGrid"></div>
-  <div className="mt-4">
-    <p class="text-muted small mb-0">Written by <a href="http://jeffreyradcliffe.com">Jeffrey Radcliffe</a></p>
+  <div className="my-6">
+    <p class="text-muted small mb-0">A browser-based MIDI controller demonstrating real-time WebSocket communication and MIDI output to DAWs like Ableton Live.</p>
+    <p class="text-muted small mb-0">Prototype for live performance and audience interaction applications. Written by <a href="http://jeffreyradcliffe.com">Jeffrey Radcliffe</a></p>
   </div>  
 </div>
 
@@ -80,56 +81,89 @@ socket.onerror = (err) => {
 };
 
 const pads = [
-  { note: 60, label: "C4" },
-  { note: 62, label: "D4" },
-  { note: 64, label: "E4" },
-  { note: 65, label: "F4" },
-  { note: 67, label: "G4" },
-  { note: 69, label: "A4" },
-  { note: 71, label: "B4" },
-  { note: 72, label: "C5" },
-  { note: 74, label: "D5" }
+  { note: 60, label: "-" },
+  { note: 62, label: "-" },
+  { note: 64, label: "-" },
+  { note: 65, label: "-" },
+  { note: 67, label: "-" },
+  { note: 69, label: "-" },
+  { note: 71, label: "-" },
+  { note: 72, label: "-" },
+  { note: 74, label: "-" }
 ];
 
 const padGrid = document.getElementById("padGrid");
-
-pads.forEach(pad => {
-  const btn = document.createElement("button");
-  btn.className = "midi-pad w-100 py-4 fs-4";
-  btn.innerText = pad.label;
-  btn.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
-    }
-  });
-  btn.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
-    }
-  });
-
-  const col = document.createElement("div");
-  col.className = "col d-grid";
-  col.appendChild(btn);
-  padGrid.appendChild(col);
-});
+updatePadGrid();
 
 const led = document.getElementById("led");
 
 socket.onmessage = (event) => {
   const msg = JSON.parse(event.data);
 
-  // Flash the LED
-  led.style.backgroundColor = "#0d6efd"; // Blue when message received
-  led.style.boxShadow = "0 0 15px #0d6efd";
+  if (msg.type === "note" || msg.type === "cue" || msg.type === "bulkUpdateLabels") {
+    // Flash the LED
+    led.style.backgroundColor = "#0d6efd"; // consistent blue flash
+    led.style.boxShadow = "0 0 15px #0d6efd";
+    setTimeout(() => {
+      led.style.backgroundColor = "#ccc";
+      led.style.boxShadow = "0 0 5px #999";
+    }, 200);
+  }
 
-  setTimeout(() => {
-    led.style.backgroundColor = "#ccc"; // Back to grey
-    led.style.boxShadow = "0 0 5px #999";
-  }, 200);
+  if (msg.type === "note") {
+    // (already handled LED above)
+  } else if (msg.type === "cue") {
+    const cueDisplay = document.getElementById("cueDisplay");
+    cueDisplay.innerText = msg.text;
+    cueDisplay.style.opacity = 1;
+  } else if (msg.type === "updateLabel") {
+    const pad = pads.find(p => p.note === msg.note);
+    if (pad) {
+      pad.label = msg.label;
+      updatePadGrid();
+    }
+  } else if (msg.type === "bulkUpdateLabels") {
+    console.log("🎛️ Scene update received: rebuilding button grid.");
+
+    pads.length = 0; // Clear the current pads
+    for (const [noteStr, label] of Object.entries(msg.labels)) {
+      pads.push({ note: parseInt(noteStr, 10), label: label });
+    }
+    updatePadGrid();
+  }
 };
+function updatePadGrid() {
+  padGrid.innerHTML = "";
+  pads.forEach(pad => {
+    const btn = document.createElement("button");
+    btn.className = "midi-pad w-100 py-4 fs-4";
+    btn.innerText = pad.label;
+    btn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
+      }
+    });
+    btn.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
+      }
+    });
+
+    const col = document.createElement("div");
+    col.className = "col d-grid";
+    col.appendChild(btn);
+    padGrid.appendChild(col);
+  });
+}
+
+// Add Next Scene button event listener
+document.getElementById("nextSceneBtn").addEventListener("click", () => {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type: "nextScene" }));
+  }
+});
 </script>
 
 </body>
