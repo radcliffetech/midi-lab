@@ -50,11 +50,12 @@ Open your browser to `http://localhost:8080` to view the live MIDI data stream.
 
 ## 🎛 Features
 
-- Captures incoming MIDI notes from any connected device
-- Broadcasts live NoteOn events to all WebSocket clients
-- Simple frontend to view note numbers and velocities
-- Small, fast, standalone Go server
-- No database, no backend processing — pure WebMIDI stream
+- Sends and receives MIDI NoteOn events via WebSocket
+- Fully responsive web interface with 8 virtual pads
+- Visual LED indicator for sent and received events
+- Cue broadcast system for timed or manual cue triggering
+- Connection loss detection with user-friendly UI fallback
+- Touch and mouse support for mobile and desktop control
 
 ---
 
