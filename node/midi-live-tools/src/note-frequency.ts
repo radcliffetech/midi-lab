@@ -41,8 +41,12 @@ function handleMIDIMessage(e: MIDIMessageEvent) {
         for (let i = 0; i < 128; i++) {
           pitchClassCounts[i % 12] += noteCounts[i];
         }
-        const key = detectKey(pitchClassCounts);
+        
+        const { key, confidence } = detectKey(pitchClassCounts);
+        
         document.getElementById('keyOutput')!.textContent = key;
+        document.getElementById('confidenceOutput')!.textContent = confidence.toFixed(2);
+        document.getElementById('pitchClassesOutput')!.textContent = `[${pitchClassCounts.join(', ')}]`;
     }
 }
 
@@ -70,4 +74,14 @@ document.getElementById('resetButton')?.addEventListener('click', () => {
     }
     chart.update();
     document.getElementById('keyOutput')!.textContent = '–';
+    document.getElementById('pitchClassesOutput')!.textContent = '–';
+});
+
+document.getElementById('copyButton')?.addEventListener('click', () => {
+  const pitchText = document.getElementById('pitchClassesOutput')?.textContent ?? '';
+  navigator.clipboard.writeText(pitchText).then(() => {
+    console.log('Pitch class array copied to clipboard.');
+  }).catch(err => {
+    console.error('Failed to copy pitch class array:', err);
+  });
 });

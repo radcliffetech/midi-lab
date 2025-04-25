@@ -5,6 +5,7 @@
   <title>Note Frequency Histogram</title>
   <script type="module" src="/src/note-frequency.ts"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -16,11 +17,25 @@
   <div class="container">
     <h1 class="text-centermb-4">Note Frequency Histogram</h1>
     <div class="text-end mt-4">
-      <button id="resetButton" class="btn btn-outline-primary">Reset Chart</button>
+      <button id="resetButton" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-counterclockwise"></i> Reset Chart
+        </button>
     </div>
-    <div class="text-end mt-3">
-      <strong>Detected Key:</strong> <span id="keyOutput">–</span>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="fs-4 d-flex align-items-center">
+        <button id="copyButton" class="btn btn-sm me-1" title="Copy to clipboard">
+          <i class="bi bi-clipboard"></i>
+        </button>
+        <span id="pitchClassesOutput">[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span>
+      </div>
+      <div class="text-end">
+        <div><strong>Detected Key:</strong> <span id="keyOutput">–</span></div>
+        <div><strong>Confidence (Presently Unreliable):</strong> <span id="confidenceOutput">–</span></div>
+      </div>
     </div>
+
+
     <canvas id="noteChart" width="800" height="400"></canvas>
    
   </div>

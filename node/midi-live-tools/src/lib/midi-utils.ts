@@ -74,28 +74,29 @@ function correlate(a: number[], b: number[]): number {
   return numerator / Math.sqrt(denomA * denomB);
 }
 
-export function detectKey(pitchClassCounts: number[]): string {
+export function detectKey(pitchClassCounts: number[]): { key: string, confidence: number } {
   const majorProfile = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
   const minorProfile = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 
   let bestScore = -Infinity;
   let bestKey = '';
+  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
   for (let i = 0; i < 12; i++) {
-    const rotated = (arr: number[]) => arr.map((_, j) => arr[(j + i) % 12]);
+    const rotateInput = (arr: number[]) => arr.map((_, j) => arr[(j - i + 12) % 12]);
 
-    const majorScore = correlate(pitchClassCounts, rotated(majorProfile));
+    const majorScore = correlate(rotateInput(pitchClassCounts), majorProfile);
     if (majorScore > bestScore) {
       bestScore = majorScore;
-      bestKey = `${midiNoteName(i)} Major`;
+      bestKey = `${names[i]} Major`;
     }
 
-    const minorScore = correlate(pitchClassCounts, rotated(minorProfile));
+    const minorScore = correlate(rotateInput(pitchClassCounts), minorProfile);
     if (minorScore > bestScore) {
       bestScore = minorScore;
-      bestKey = `${midiNoteName(i)} Minor`;
+      bestKey = `${names[i]} Minor`;
     }
   }
 
-  return bestKey;
+  return { key: bestKey, confidence: bestScore };
 }
