@@ -50,3 +50,8 @@ export function detectChord(notes: number[]): string | null {
 
   return null;
 }
+
+
+export function getNoteName(n: number): string {
+  return `${midiNoteName(n)} (${n})`;
+}

@@ -10,17 +10,23 @@
     />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body class="bg-dark text-light">
-    <h1 class="text-center text-info">🎼 MIDI Chord Analyzer</h1>
+  <body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+          <a class="navbar-brand" href="/index.html">MIDI Live Tools</a>
+        </div>
+      </nav>
+    <h1 class="text-center">MIDI Chord Analyzer</h1>
     <div id="status" class="text-center text-secondary mb-3 fst-italic">
       Connecting to MIDI...
     </div>
     <div id="keyboard" class="keyboard mb-4"></div>
+    <div class="flex justify-content-center mb-3">
     <div
       id="active-notes"
       class="text-center mb-2"
-      style="font-family: monospace"
     ></div>
-    <div id="chord-display" class="text-center fs-3 text-warning"></div>
+    <div id="chord-display" class="text-center fs-3 display-2"></div>
+    </div>
   </body>
 </html>

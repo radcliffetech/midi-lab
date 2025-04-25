@@ -1,3 +1,5 @@
+import { getNoteName } from './lib/midi-utils';
+
 const select = document.getElementById('midi-select') as HTMLSelectElement;
 const startStopBtn = document.getElementById('start-stop') as HTMLButtonElement;
 const statusDiv = document.getElementById('status')!;
@@ -145,22 +147,3 @@ startStopBtn.addEventListener('click', () => {
 });
 
 initMIDI();
-function getNoteName(noteNumber: number): string {
-  const notes = [
-    'C',
-    'C#',
-    'D',
-    'D#',
-    'E',
-    'F',
-    'F#',
-    'G',
-    'G#',
-    'A',
-    'A#',
-    'B',
-  ];
-  const note = notes[noteNumber % 12];
-  const octave = Math.floor(noteNumber / 12) - 1;
-  return `${note}${octave}`;
-}

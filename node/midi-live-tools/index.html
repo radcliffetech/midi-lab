@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>MIDI Live Monitor</title>
+    <title>MIDI Live Tools</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -10,16 +10,38 @@
       crossorigin="anonymous"
     />
   </head>
-  <body class="bg-dark text-light p-4">
-    <div class="container">
-      <h1 class="text-center text-info mb-4">🎹 MIDI Live Tools</h1>
-      <a href="/monitor.html" class="btn btn-info mb-2">MIDI Monitor</a>
-      <a href="/visualizer.html" class="btn btn-info mb-2"
-        >MIDI Keyboard Visualizer</a
-      >
-      <a href="/chord-analyzer.html" class="btn btn-info mb-2"
-        >MIDI Chord Analyzer</a
-      >
+  <body class="bg-light text-dark">
+    <nav class="navbar navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand" href="#">MIDI Live Tools</a>
+      </div>
+    </nav>
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card text-center mb-3">
+            <div class="card-body">
+              <h5 class="card-title">MIDI Monitor</h5>
+              <p class="card-text">View incoming MIDI messages in real time.</p>
+              <a href="/monitor.html" class="btn btn-primary">Open Monitor</a>
+            </div>
+          </div>
+          <div class="card text-center mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Keyboard Visualizer</h5>
+              <p class="card-text">Watch keys light up as you play them.</p>
+              <a href="/visualizer.html" class="btn btn-primary">Open Visualizer</a>
+            </div>
+          </div>
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Chord Analyzer</h5>
+              <p class="card-text">Detect chords from held MIDI notes.</p>
+              <a href="/chord-analyzer.html" class="btn btn-primary">Open Analyzer</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
