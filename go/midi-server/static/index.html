@@ -23,18 +23,43 @@
       margin-left: 10px;
       border-radius: 5px;
     }
+    .midi-pad {
+      background-color: #6c757d;
+      border: none;
+      color: white;
+      border-radius: 12px;
+      font-weight: bold;
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+    .midi-pad:active {
+      background-color: #0d6efd;
+      transform: scale(0.97);
+      box-shadow: 0 0 8px #0d6efd;
+    }
+    .midi-pad:hover {
+      background-color: #5c636a; /* lighter grey */
+      box-shadow: 0 0 10px #adb5bd;
+    }
   </style>
 </head>
 <body>
 
-<div class="container mt-4">
-  <h1 class="mb-4 text-center">🎛 MIDI Live Monitor</h1>
-  <form id="sendForm" class="mb-4 d-flex gap-2">
-    <input type="number" id="noteInput" class="form-control" placeholder="MIDI Note (0-127)" min="0" max="127" required>
-    <input type="number" id="velocityInput" class="form-control" placeholder="Velocity (0-127)" min="0" max="127" required>
-    <button type="submit" class="btn btn-primary">Send</button>
-  </form>
-  <div id="messages" class="d-flex flex-column gap-2"></div>
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="mb-0">MIDI Control</h1>
+      <p></p>
+    </div>
+    <div id="led" style="width: 30px; height: 30px; background-color: #ccc; border-radius: 50%; box-shadow: 0 0 5px #999;"></div>
+  </div>
+  <div className="my-2">
+    <p class="text-muted small mb-0">A browser-based MIDI controller demonstrating real-time WebSocket communication and MIDI output to DAWs like Ableton Live.</p>
+    <p class="text-muted small mb-0">Prototype for live performance and audience interaction applications.</p>
+  </div>
+  <div class="row row-cols-2 row-cols-md-3 my-2 g-3" id="padGrid"></div>
+  <div className="mt-4">
+    <p class="text-muted small mb-0">Written by <a href="http://jeffreyradcliffe.com">Jeffrey Radcliffe</a></p>
+  </div>  
 </div>
 
 <script>
@@ -54,37 +79,56 @@ socket.onerror = (err) => {
   console.error("❌ WebSocket error:", err);
 };
 
-document.getElementById('sendForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const note = parseInt(document.getElementById('noteInput').value);
-  const velocity = parseInt(document.getElementById('velocityInput').value);
-  if (socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ note, velocity }));
-  }
+const pads = [
+  { note: 60, label: "C4" },
+  { note: 62, label: "D4" },
+  { note: 64, label: "E4" },
+  { note: 65, label: "F4" },
+  { note: 67, label: "G4" },
+  { note: 69, label: "A4" },
+  { note: 71, label: "B4" },
+  { note: 72, label: "C5" },
+  { note: 74, label: "D5" }
+];
+
+const padGrid = document.getElementById("padGrid");
+
+pads.forEach(pad => {
+  const btn = document.createElement("button");
+  btn.className = "midi-pad w-100 py-4 fs-4";
+  btn.innerText = pad.label;
+  btn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
+    }
+  });
+  btn.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ note: pad.note, velocity: 100 }));
+    }
+  });
+
+  const col = document.createElement("div");
+  col.className = "col d-grid";
+  col.appendChild(btn);
+  padGrid.appendChild(col);
 });
+
+const led = document.getElementById("led");
 
 socket.onmessage = (event) => {
   const msg = JSON.parse(event.data);
-  const noteName = midiNoteToName(msg.note);
 
-  const container = document.createElement("div");
-  container.className = "note-entry";
+  // Flash the LED
+  led.style.backgroundColor = "#0d6efd"; // Blue when message received
+  led.style.boxShadow = "0 0 15px #0d6efd";
 
-  const noteText = document.createElement("div");
-  noteText.innerHTML = `<strong>${noteName}</strong> (Velocity: ${msg.velocity})`;
-
-  const velocityBar = document.createElement("div");
-  velocityBar.className = "velocity-bar";
-  velocityBar.style.width = (msg.velocity * 1.5) + "px";
-
-  container.appendChild(noteText);
-  container.appendChild(velocityBar);
-
-  const messages = document.getElementById("messages");
-  messages.appendChild(container);
-
-  // Auto-scroll to bottom
-  messages.scrollTop = messages.scrollHeight;
+  setTimeout(() => {
+    led.style.backgroundColor = "#ccc"; // Back to grey
+    led.style.boxShadow = "0 0 5px #999";
+  }, 200);
 };
 </script>
 
