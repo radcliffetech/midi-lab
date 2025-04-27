@@ -5,8 +5,8 @@ A lightweight Go tool to stress-test WebSocket-based MIDI servers by simulating 
 ## Features
 
 - Simulates many WebSocket clients (configurable)
-- Sends randomized MIDI notes with human-like timing
-- Some clients act as "scene masters" sending frequent cue changes
+- Sends randomized MIDI notes and scene cues with human-like timing
+- Some clients send scene change cues occasionally
 - Bursty "jam session" behavior for realistic traffic
 - Live stats reporting (clients connected, notes sent)
 
@@ -51,8 +51,8 @@ go run main.go --server=yourserver.com:8080 --clients=2000
 ## How It Works
 
 - Each client establishes a WebSocket connection.
-- Clients send MIDI note messages randomly every 100ms–5s.
-- 10% of clients ("scene masters") send cue change messages 30% of the time.
+- Clients send MIDI note and scene cue messages randomly every 100ms–5s with human-like timing.
+- Some clients send scene change cues occasionally.
 - Random velocity values simulate realistic note pressures.
 - Disconnected clients automatically stop.
 - Stats (clients connected, notes sent) print every 5 seconds.

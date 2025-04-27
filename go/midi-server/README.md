@@ -18,6 +18,10 @@ Clients can interact with MIDI note data live over WebSocket and trigger virtual
 - Mobile and desktop touch/mouse support
 - Color-coded, standardized server logs
 - Automatic client reconnect and error handling
+- Dynamic per-scene button color theming (gradient + pressed state)
+- Hot reload scenes at runtime via `/reload-scenes`
+- Multiple broadcasting strategies (Default, Buffered, Batch, Lossy) for optimizing under load
+- Modular broadcaster interface for easy A/B testing
 
 ---
 
@@ -65,6 +69,22 @@ Start the server:
 sh run.sh
 ```
 
+### Running with Correct Build Flags
+
+To ensure correct linking with the native PortMIDI library, use the provided `run.sh` script:
+
+```bash
+sh ./run.sh
+```
+
+Or if running manually, set `CGO_LDFLAGS`:
+
+```bash
+CGO_LDFLAGS="-L/opt/homebrew/lib" go run *.go
+```
+
+This ensures Go can find and link against the installed PortMIDI library when compiling and running.
+
 Server starts:
 - WebSocket endpoint: `ws://localhost:8080/ws`
 - Static frontend UI: `http://localhost:8080`
@@ -79,6 +99,24 @@ Open `http://localhost:8080` to access the controller interface!
 - Easily scalable to higher connection counts with proper server resources.
 - Built-in idle timeout handling prevents resource leaks.
 - MIDI messages protected against concurrency race conditions.
+
+---
+
+## 📡 Broadcast Modes
+
+You can choose the server's WebSocket broadcast strategy at startup:
+
+```bash
+go run main.go --broadcast-mode=buffered
+```
+
+Available modes:
+- `default` — Immediate send, close slow clients
+- `buffered` — Allow 50ms grace before closing (recommended)
+- `batch` — Parallel fan-out to clients
+- `lossy` — Skip slow clients without closing
+
+Default is `buffered`.
 
 ---
 
