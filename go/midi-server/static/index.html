@@ -6,6 +6,34 @@
   <title>MIDI Live</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    .container-fluid {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #padGrid {
+      flex: 0 0 75vh;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      padding: 1rem 0;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 768px) {
+      #padGrid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+
+
     body {
       background-color: #f8f9fa;
     }
@@ -28,51 +56,70 @@
     }
 
     .midi-pad {
-      background-color: #6c757d;
-      border: none;
-      color: white;
-      border-radius: 12px;
+      background: linear-gradient(180deg, #f8f8f8, #9ec0da) !important;
+      border: none !important;
+      color: rgb(20, 18, 23) !important;
+      border-radius: 12px !important;
       font-weight: bold;
-      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-    }
-
-    .midi-pad:active {
-      background-color: #0d6efd;
-      transform: scale(0.97);
-      box-shadow: 0 0 8px #0d6efd;
+      transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) !important;
+      padding: 2rem !important;
+      font-size: 2.5rem !important;
+      border: 1px solid #073c8c !important;
     }
 
     .midi-pad:hover {
-      background-color: #5c636a;
-      /* lighter grey */
-      box-shadow: 0 0 10px #adb5bd;
+      transform: scale(1.01) !important;
+      /* background: #0d6efd !important; */
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .midi-pad:active {
+      background: linear-gradient(145deg, #3439a4, #004ce5) !important;
+      color: white !important;
+      transform: scale(0.985) !important;
+      box-shadow: 0 0 12px #0d6efd !important;
+    }
+
+    #led {
+      transition: background-color 0.5s ease, box-shadow 0.5s ease;
+    }
+
+
+    #cueDisplay {
+      min-height: 60px;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: normal;
+      word-wrap: break-word;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h1 class="mb-0">MIDI Control</h1>
-        <p></p>
+  <nav class="navbar navbar-expand-lg navbar-light py-2" style="background-color: #03094d;">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-4 w-100">
+        <div class="text-light fw-bold">MIDI Control</div>
+        <div class="ms-auto d-flex align-items-center gap-3">
+          <a href="/about.html" class="text-light text-decoration-none">About</a>
+          <div id="led"
+            style="width: 20px; height: 20px; background-color: #ccc; border-radius: 50%; box-shadow: 0 0 5px #999;">
+          </div>
+        </div>
       </div>
-      <div id="led"
-        style="width: 30px; height: 30px; background-color: #ccc; border-radius: 50%; box-shadow: 0 0 5px #999;"></div>
     </div>
+  </nav>
+
+  <div class="container-fluid mt-4">
     <div id="cueDisplay" class="text-center my-3 fs-5 text-muted"></div>
     <div id="connectionError" class="alert alert-danger text-center d-none" role="alert">
       Connection lost. <button id="reloadBtn" class="btn btn-danger btn-sm ms-2">Reload</button>
     </div>
-    <div class="row row-cols-2 row-cols-md-3 my-2 g-3 mb-5" id="padGrid"></div>
-    <div className="my-6">
-      <p class="text-muted small mb-0">A browser-based MIDI controller demonstrating real-time WebSocket communication
-        and MIDI output to DAWs like Ableton Live.</p>
-      <p class="text-muted small mb-0">Prototype for live performance and audience interaction applications. Written by
-        <a href="http://jeffreyradcliffe.com">Jeffrey Radcliffe</a>
-      </p>
-    </div>
+    <div id="padGrid"></div>
   </div>
 
   <script>
@@ -132,7 +179,7 @@
           setTimeout(() => {
             led.style.backgroundColor = "#ccc";
             led.style.boxShadow = "0 0 5px #999";
-          }, 200);
+          }, 500);
         }
       });
       btn.addEventListener("mousedown", (e) => {
@@ -146,7 +193,7 @@
           setTimeout(() => {
             led.style.backgroundColor = "#ccc";
             led.style.boxShadow = "0 0 5px #999";
-          }, 200);
+          }, 500);
         }
       });
 
@@ -171,10 +218,13 @@
         setTimeout(() => {
           led.style.backgroundColor = "#ccc";
           led.style.boxShadow = "0 0 5px #999";
-        }, 200);
+        }, 500);
         const cueDisplay = document.getElementById("cueDisplay");
         cueDisplay.innerText = msg.text;
         cueDisplay.style.opacity = 1;
+        setTimeout(() => {
+          cueDisplay.style.opacity = 0;
+        }, 4000);
       }
 
       if (msg.type === "note") {
@@ -184,7 +234,7 @@
         setTimeout(() => {
           led.style.backgroundColor = "#ccc";
           led.style.boxShadow = "0 0 5px #999";
-        }, 200);
+        }, 500);
       }
     }
 
