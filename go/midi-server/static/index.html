@@ -62,11 +62,11 @@
       border: none !important;
       color: rgb(20, 18, 23) !important;
       border-radius: 12px !important;
-      font-weight: bold;
+      font-weight: normal;
       transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) !important;
       padding: 2rem !important;
-      font-size: 2.5rem !important;
+      font-size: 1.8rem !important;
       border: 1px solid #073c8c !important;
     }
 
@@ -223,7 +223,7 @@
       // Hide cue display, show error, disable pads
       showDisconnectedStatus();
 
-      let countdown = 20;
+      let countdown = 5;
       const reloadBtn = document.getElementById("reloadBtn");
       reloadBtn.innerText = `Reload (${countdown})`;
 
@@ -253,6 +253,7 @@
       const btn = document.createElement("button");
       btn.className = "midi-pad w-100 py-4 fs-4";
       btn.innerText = pad.label;
+      btn.setAttribute("data-note", pad.note);
       btn.setAttribute("aria-label", "Pad " + pad.label);
       btn.addEventListener("touchstart", (e) => {
         e.preventDefault();
@@ -274,6 +275,8 @@
     socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
 
+      console.log("WebSocket Message Received:", msg);
+
       if (msg.type === "cue") {
         // Flash the LED blue on receive
         led.style.backgroundColor = "#0d6efd";
@@ -290,6 +293,18 @@
         setTimeout(() => {
           cueDisplay.innerText = "";
         }, 4500);
+
+        if (msg.labels) {
+          pads.forEach(pad => {
+            const button = document.querySelector(`.midi-pad[data-note="${pad.note}"]`);
+            if (button && msg.labels[pad.note]) {
+              const newLabel = msg.labels[pad.note];
+              button.innerText = newLabel;
+              button.setAttribute("aria-label", "Pad " + newLabel);
+              pad.label = newLabel;
+            }
+          });
+        }
       }
 
       if (msg.type === "note") {

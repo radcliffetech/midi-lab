@@ -148,6 +148,17 @@ func (m *MIDIManager) NoteOff(note uint8) error {
 	return writer.NoteOff(m.writer, note)
 }
 
+// FlushAllNotes sends "All Notes Off" (CC#123) on all MIDI channels.
+func (m *MIDIManager) FlushAllNotes() {
+	if m.writer == nil {
+		return
+	}
+	for ch := uint8(0); ch < 16; ch++ {
+		// m.writer = writer.Channel(m.writer, ch)
+		writer.ControlChange(m.writer, 123, 0) // CC#123 All Notes Off
+	}
+}
+
 // --- Global Variables ---
 
 type WebSocketClient struct {
@@ -273,6 +284,12 @@ type BulkLabelUpdateMessage struct {
 	Labels map[uint8]string `json:"labels"`
 }
 
+type FullSceneMessage struct {
+	Type   string           `json:"type"`
+	Cue    string           `json:"cue"`
+	Labels map[uint8]string `json:"labels"`
+}
+
 var noteEventsThisPeriod int64
 var newConnectionsThisPeriod int64
 
@@ -291,27 +308,27 @@ var scenes = []Scene{
 		},
 	},
 	{
+		Cue: "😎 Possible Applications",
+		Labels: map[uint8]string{
+			60: "Music Performance", 62: "Lecture", 64: "Trivia Night", 65: "Workshop", 67: "Art Installation", 69: "Parties", 71: "VJ", 72: "Audience Interaction",
+		},
+	},
+	{
 		Cue: "🌐 Powered by Go and Web Technologies",
 		Labels: map[uint8]string{
-			60: "GoLang", 62: "HTTP", 64: "WebSocket", 65: "MIDI I/O", 67: "Frontend", 69: "Backend", 71: "PortMidi", 72: "Bootstrap", 74: "Gorilla",
+			60: "GoLang", 62: "HTTP", 64: "WebSocket", 65: "MIDI I/O", 67: "Frontend", 69: "Backend", 71: "PortMidi", 72: "Bootstrap",
 		},
 	},
 	{
 		Cue: "🎶 Designed for Live Interaction",
 		Labels: map[uint8]string{
-			60: "Touch", 62: "Buttons", 64: "LED", 65: "Cue", 67: "Velocity", 69: "Scenes", 71: "Next", 72: "Advance", 74: "Update",
+			60: "Touch", 62: "Buttons", 64: "LED", 65: "Cue", 67: "Velocity", 69: "Scenes", 71: "Next", 72: "Advance",
 		},
 	},
 	{
 		Cue: "🚀 Prototype for Future Expansion",
 		Labels: map[uint8]string{
-			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime", 74: "AI",
-		},
-	},
-	{
-		Cue: "🚀 Possible Applications - Musical Performance with Audience Interaction, Trivia Night, Quizes",
-		Labels: map[uint8]string{
-			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime", 74: "AI",
+			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime",
 		},
 	},
 }
@@ -326,11 +343,15 @@ func broadcastScene() {
 
 	logServer("Broadcasting scene: %s", scene.Cue)
 
-	// Broadcast cue message to all clients
-	cue := CueMessage{Type: "cue", Text: scene.Cue}
+	// Broadcast full scene message (cue + labels) to all clients
+	fullScene := map[string]interface{}{
+		"type":   "cue",
+		"text":   scene.Cue,
+		"labels": scene.Labels,
+	}
 	for _, client := range hub.Clients {
 		select {
-		case client.Send <- cue:
+		case client.Send <- fullScene:
 		default:
 			// If send channel is blocked, close and remove client
 			client.Close()
@@ -362,6 +383,8 @@ func main() {
 	if err != nil {
 		logError("%v", err)
 	}
+
+	midiManager.FlushAllNotes()
 
 	// Start Hub broadcaster goroutine
 	go hub.Run(ctx)
@@ -398,7 +421,7 @@ func main() {
 	<-ctx.Done()
 	logServer("Shutting down HTTP server...")
 	server.Shutdown(context.Background())
-
+	midiManager.FlushAllNotes()
 	midiManager.Close()
 	for _, client := range hub.Clients {
 		client.Close()

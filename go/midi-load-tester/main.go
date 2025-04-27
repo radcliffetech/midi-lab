@@ -12,6 +12,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// C major pentatonic scale: C, D, E, G, A (MIDI 60, 62, 64, 67, 69), two octaves
+var pentatonicC = []int{60, 62, 64, 67, 69}
+
 const (
 	colorReset  = "\033[0m"
 	colorRed    = "\033[31m"
@@ -75,7 +78,43 @@ func simulateClient(id int, wg *sync.WaitGroup) {
 				"text": "Scene Change",
 			}
 		} else {
-			note := rand.Intn(20) + 60
+			chordChance := 0.1 // 10% chance to play a chord
+			if rand.Float64() < chordChance {
+				// Play a chord burst: 2–3 notes
+				chordSize := rand.Intn(2) + 2 // 2 or 3 notes
+				for i := 0; i < chordSize; i++ {
+					baseNote := pentatonicC[rand.Intn(len(pentatonicC))]
+					octaveShift := rand.Intn(2) * 12
+					note := baseNote + octaveShift
+					velocity := rand.Intn(100) + 1
+					msg = map[string]interface{}{
+						"type":     "note",
+						"note":     note,
+						"velocity": velocity,
+					}
+					err := c.WriteJSON(msg)
+					if err != nil {
+						log.Printf(colorRed+"[ERROR] Client %d: %v"+colorReset, id, err)
+						return
+					}
+					atomic.AddInt64(&notesSent, 1)
+					time.Sleep(30 * time.Millisecond) // slight stagger between chord notes
+				}
+				continue
+			}
+
+			// otherwise normal single note
+			bassChance := 0.1
+			var note int
+			if rand.Float64() < bassChance {
+				bassNotes := []int{60, 67}
+				baseNote := bassNotes[rand.Intn(len(bassNotes))]
+				note = baseNote - 12
+			} else {
+				baseNote := pentatonicC[rand.Intn(len(pentatonicC))]
+				octaveShift := rand.Intn(2) * 12
+				note = baseNote + octaveShift
+			}
 			velocity := rand.Intn(100) + 1
 			msg = map[string]interface{}{
 				"type":     "note",
@@ -83,13 +122,6 @@ func simulateClient(id int, wg *sync.WaitGroup) {
 				"velocity": velocity,
 			}
 			atomic.AddInt64(&notesSent, 1)
-
-			if *maxNotes > 0 && atomic.LoadInt64(&notesSent) >= *maxNotes {
-				log.Printf(colorYellow+"[CLIENT %d] Max notes limit reached (%d). Closing connection."+colorReset, id, *maxNotes)
-				_ = c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Max notes reached"))
-				time.Sleep(1 * time.Second)
-				return
-			}
 		}
 
 		err := c.WriteJSON(msg)
