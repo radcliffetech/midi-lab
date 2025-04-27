@@ -158,6 +158,15 @@
   </div>
 
   <script>
+    function showDisconnectedStatus() {
+      cueDisplay.classList.add("d-none");
+      connectionError.classList.remove("d-none");
+      document.querySelectorAll(".midi-pad").forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('disabled-visual');
+      });
+    }
+
     function sendNote(pad) {
       const button = document.querySelector(`.midi-pad[aria-label="Pad ${pad.label}"]`);
       if (button.disabled || socket.readyState !== WebSocket.OPEN) {
@@ -206,23 +215,13 @@
     socket.onerror = (err) => {
       console.error("❌ WebSocket error:", err);
       // Hide cue display, show error, disable pads
-      cueDisplay.classList.add("d-none");
-      connectionError.classList.remove("d-none");
-      document.querySelectorAll(".midi-pad").forEach(btn => {
-        btn.disabled = true;
-        btn.classList.add('disabled-visual');
-      });
+      showDisconnectedStatus();
     };
 
     socket.onclose = (event) => {
       console.error("❌ WebSocket connection closed. Code:", event.code, "Reason:", event.reason);
       // Hide cue display, show error, disable pads
-      cueDisplay.classList.add("d-none");
-      connectionError.classList.remove("d-none");
-      document.querySelectorAll(".midi-pad").forEach(btn => {
-        btn.disabled = true;
-        btn.classList.add('disabled-visual');
-      });
+      showDisconnectedStatus();
 
       let countdown = 20;
       const reloadBtn = document.getElementById("reloadBtn");
