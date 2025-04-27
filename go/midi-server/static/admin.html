@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MIDI Lab Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+  
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">🎛️ MIDI Lab Admin</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid p-4 flex-grow-1">
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow">
+          <div class="card-body text-center">
+            <h5 class="card-title fs-5 mb-3 text-start">Live Server Stats</h5>
+            <div class="row row-cols-4 text-center mb-4">
+              <div class="col border-end py-2">
+                <strong>Connected Clients</strong><br><span id="clients">-</span>
+              </div>
+              <div class="col border-end py-2">
+                <strong>Active Notes</strong><br><span id="notes">-</span>
+              </div>
+              <div class="col border-end py-2">
+                <strong>Notes per Period</strong><br><span id="notes_per_period">-</span>
+              </div>
+              <div class="col py-2">
+                <strong>Connections per Period</strong><br><span id="connections_per_period">-</span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <canvas id="clientsChart" height="200"></canvas>
+              </div>
+              <div class="col-md-6">
+                <canvas id="notesDensityChart" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <div class="container">
+      <small>&copy; 2025 MIDI Lab</small>
+    </div>
+  </footer>
+
+  <script>
+    const maxPoints = 20;
+    const clientsData = {
+      labels: [],
+      datasets: [{
+        label: 'Connected Clients',
+        data: [],
+        borderColor: 'rgb(54, 162, 235)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        fill: true,
+        tension: 0.3,
+      }]
+    };
+    const notesDensityData = {
+      labels: [],
+      datasets: [{
+        label: 'Notes per Period',
+        data: [],
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        fill: true,
+        tension: 0.3,
+      }]
+    };
+
+    const clientsChartCtx = document.getElementById('clientsChart').getContext('2d');
+    const notesDensityChartCtx = document.getElementById('notesDensityChart').getContext('2d');
+
+    const clientsChart = new Chart(clientsChartCtx, {
+      type: 'line',
+      data: clientsData,
+      options: {
+        responsive: true,
+        animation: false,
+        scales: {
+          x: {
+            type: 'category',
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            beginAtZero: true,
+            precision: 0,
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        }
+      }
+    });
+
+    const notesDensityChart = new Chart(notesDensityChartCtx, {
+      type: 'line',
+      data: notesDensityData,
+      options: {
+        responsive: true,
+        animation: false,
+        scales: {
+          x: {
+            type: 'category',
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            beginAtZero: true,
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        }
+      }
+    });
+
+    let fetchInterval = 5000; // Start at 5 seconds
+    let fetchTimer = null;
+
+    function addData(chartData, label, value) {
+      chartData.labels.push(label);
+      chartData.datasets[0].data.push(value);
+      if (chartData.labels.length > maxPoints) {
+        chartData.labels.shift();
+        chartData.datasets[0].data.shift();
+      }
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch('/stats');
+        const data = await res.json();
+
+        // Update page as normal
+        document.getElementById('clients').textContent = data.connected_clients;
+        document.getElementById('notes').textContent = data.active_notes;
+        document.getElementById('notes_per_period').textContent = data.notes_per_period;
+        document.getElementById('connections_per_period').textContent = data.connections_per_period;
+
+        const now = new Date();
+        const timeLabel = now.toLocaleTimeString();
+
+        addData(clientsData, timeLabel, data.connected_clients);
+        clientsChart.update();
+
+        addData(notesDensityData, timeLabel, data.notes_per_period);
+        notesDensityChart.update();
+
+        fetchInterval = 5000; // Reset interval after successful fetch
+      } catch (e) {
+        console.error('Failed to fetch stats:', e);
+        fetchInterval = Math.min(fetchInterval * 2, 60000); // Exponential backoff
+      }
+
+      scheduleNextFetch();
+    }
+
+    function scheduleNextFetch() {
+      clearTimeout(fetchTimer);
+      fetchTimer = setTimeout(fetchStats, fetchInterval);
+    }
+
+    fetchStats();
+
+    window.addEventListener('resize', () => {
+      clientsChart.resize();
+      notesDensityChart.resize();
+    });
+  </script>
+</body>
+</html>

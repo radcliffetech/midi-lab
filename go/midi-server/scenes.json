@@ -1,0 +1,107 @@
+[
+  {
+    "cue": "🎛️ Welcome to the MIDI Control Prototype!",
+    "labels": {
+      "60": "WebSocket",
+      "62": "MIDI",
+      "64": "Realtime",
+      "65": "Client",
+      "67": "Server",
+      "69": "Scene",
+      "71": "Cue",
+      "72": "Pad"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #9ec0da)",
+    "pressColor": "linear-gradient(145deg, #3478c6, #1254a2)"
+  },
+  {
+    "cue": "😎 Possible Applications",
+    "labels": {
+      "60": "Music Performance",
+      "62": "Lecture",
+      "64": "Trivia Night",
+      "65": "Workshop",
+      "67": "Art Installation",
+      "69": "Parties",
+      "71": "VJ",
+      "72": "Audience Interaction"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #a0d3a0)",
+    "pressColor": "linear-gradient(145deg, #4caf50, #087f23)"
+  },
+  {
+    "cue": "🌐 Powered by Go and Web Technologies",
+    "labels": {
+      "60": "GoLang",
+      "62": "HTTP",
+      "64": "WebSocket",
+      "65": "MIDI I/O",
+      "67": "Frontend",
+      "69": "Backend",
+      "71": "PortMidi",
+      "72": "Bootstrap"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #e0b3ff)",
+    "pressColor": "linear-gradient(145deg, #9c27b0, #6a0080)"
+  },
+  {
+    "cue": "🎶 Designed for Live Interaction",
+    "labels": {
+      "60": "Touch",
+      "62": "Buttons",
+      "64": "LED",
+      "65": "Cue",
+      "67": "Velocity",
+      "69": "Scenes",
+      "71": "Next",
+      "72": "Advance"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #ffd180)",
+    "pressColor": "linear-gradient(145deg, #ffa000, #ff6f00)"
+  },
+  {
+    "cue": "🚀 Prototype for Future Expansion",
+    "labels": {
+      "60": "Mobile",
+      "62": "Performance",
+      "64": "DAW",
+      "65": "Ableton",
+      "67": "OSC",
+      "69": "MIDI 2.0",
+      "71": "Cloud",
+      "72": "Realtime"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #ff8a80)",
+    "pressColor": "linear-gradient(145deg, #e53935, #b71c1c)"
+  },
+  {
+    "cue": "Buttons can be customized",
+    "labels": {
+      "60": "🌟 Étoile",
+      "62": "🔥 火 (Fire)",
+      "64": "💧 Agua",
+      "65": "🌈 Regenbogen",
+      "67": "⚡ برق (Lightning)",
+      "69": "🌍 Mundo",
+      "71": "🎭 演劇 (Theater)",
+      "72": "🎨 Artístico"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #ffccbc)",
+    "pressColor": "linear-gradient(145deg, #ff5722, #c41c00)"
+  },
+  {
+    "cue": "🎉 Thank you for your attention",
+    "labels": {
+      "60": "Questions?",
+      "62": "Feedback",
+      "64": "Suggestions",
+      "65": "Improvements",
+      "67": "Ideas",
+      "69": "Collaboration",
+      "71": "Support",
+      "72": "Contact"
+    },
+    "normalColor": "linear-gradient(180deg, #f8f8f8, #cfd8dc)",
+    "pressColor": "linear-gradient(145deg, #607d8b, #37474f)"
+  }
+]
