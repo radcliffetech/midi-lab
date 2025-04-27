@@ -80,6 +80,12 @@ var scenes = []Scene{
 			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime", 74: "AI",
 		},
 	},
+	{
+		Cue: "🚀 Possible Applications - Musical Performance with Audience Interaction, Trivia Night, Quizes",
+		Labels: map[uint8]string{
+			60: "Mobile", 62: "Performance", 64: "DAW", 65: "Ableton", 67: "OSC", 69: "MIDI 2.0", 71: "Cloud", 72: "Realtime", 74: "AI",
+		},
+	},
 }
 
 var currentScene int
