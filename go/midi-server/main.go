@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -18,6 +19,8 @@ import (
 	"gitlab.com/gomidi/midi/reader"
 	"gitlab.com/gomidi/midi/writer"
 	"gitlab.com/gomidi/portmididrv"
+
+	"github.com/radcliffetech/midi-lab/go/midi-server/internal/broadcast"
 )
 
 // --------------------
@@ -170,7 +173,7 @@ func (m *MIDIManager) FlushAllNotes() {
 // --------------------
 
 var (
-	hub                      = &Hub{Clients: make(map[*websocket.Conn]*WebSocketClient), Broadcast: make(chan interface{}), Shutdown: make(chan struct{})}
+	hub                      *Hub
 	noteStatus               = make(map[uint8]bool) // track active notes
 	noteStatusMutex          sync.Mutex
 	midiManager              *MIDIManager
@@ -201,10 +204,15 @@ func (c *WebSocketClient) Close() {
 	})
 }
 
+func (c *WebSocketClient) SendChannel() chan interface{} {
+	return c.Send
+}
+
 type Hub struct {
-	Clients   map[*websocket.Conn]*WebSocketClient
-	Broadcast chan interface{}
-	Shutdown  chan struct{}
+	Clients     map[*websocket.Conn]*WebSocketClient
+	Broadcast   chan interface{}
+	Shutdown    chan struct{}
+	Broadcaster broadcast.Broadcaster
 }
 
 type IncomingMessage struct {
@@ -460,7 +468,7 @@ func (h *Hub) Run(ctx context.Context) {
 							logError("MIDI out error: %v", err)
 						}
 						go func(note uint8) {
-							time.Sleep(200 * time.Millisecond)
+							time.Sleep(500 * time.Millisecond)
 							err := midiManager.NoteOff(note)
 							if err != nil {
 								if err.Error() != fmt.Sprintf("can't write channel.NoteOff channel 0 key %d. note is not running.", note) {
@@ -475,13 +483,11 @@ func (h *Hub) Run(ctx context.Context) {
 				}
 			}
 
-			for _, client := range h.Clients {
-				select {
-				case client.Send <- msg:
-				default:
-					client.Close()
-				}
+			clients := make(map[*websocket.Conn]broadcast.ClientSender)
+			for conn, client := range h.Clients {
+				clients[conn] = client
 			}
+			h.Broadcaster.Broadcast(clients, msg)
 
 		case <-ctx.Done():
 			return
@@ -494,6 +500,14 @@ func (h *Hub) Run(ctx context.Context) {
 // --------------------
 
 func main() {
+	// Available broadcast modes:
+	// - default  => Immediate send, close slow clients
+	// - buffered => Allow 50ms grace for slow clients before closing (recommended)
+	// - batch    => Parallel sending with goroutines
+	// - lossy    => Skip slow clients without closing them
+	var broadcastMode = flag.String("broadcast-mode", "", "Broadcast mode: default, buffered, batch, lossy")
+	flag.Parse()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -512,6 +526,25 @@ func main() {
 		log.Fatalf("Failed to load scenes: %v", err)
 	}
 	logServer("Loaded %d scenes", len(scenes))
+
+	hub = &Hub{
+		Clients:   make(map[*websocket.Conn]*WebSocketClient),
+		Broadcast: make(chan interface{}),
+		Shutdown:  make(chan struct{}),
+	}
+
+	switch *broadcastMode {
+	case "", "buffered":
+		hub.Broadcaster = &broadcast.BufferedBroadcaster{}
+	case "default":
+		hub.Broadcaster = &broadcast.DefaultBroadcaster{}
+	case "batch":
+		hub.Broadcaster = &broadcast.BatchBroadcaster{}
+	case "lossy":
+		hub.Broadcaster = &broadcast.LossyBroadcaster{}
+	default:
+		log.Fatalf("Unknown broadcast mode: %s", *broadcastMode)
+	}
 
 	midiManager = &MIDIManager{}
 	err = midiManager.Setup()

@@ -1,4 +1,4 @@
-module github.com/radcliffetech/midi-lab/go/midi-serve
+module github.com/radcliffetech/midi-lab/go/midi-server
 
 go 1.24.2
 
