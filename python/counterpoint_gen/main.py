@@ -111,7 +111,10 @@ def generate():
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mid")
         score.write("midi", fp=tmp_file.name)
         tmp_file.close()
-        return send_file(tmp_file.name, mimetype="audio/midi", as_attachment=True, download_name="counterpoint.mid")
+        try:
+            return send_file(tmp_file.name, mimetype="audio/midi", as_attachment=True, download_name="counterpoint.mid")
+        finally:
+            os.remove(tmp_file.name)
 
     return jsonify({"status": "success"})
 
