@@ -8,12 +8,13 @@ Includes converters, servers, visualizers, and more.
 
 - `go/` — CLI tools and libraries for MIDI manipulation (compiled and fast)
 - `node/` — APIs and live MIDI tools (great for real-time and browser work)
+- `python/` - Python tools for counterpoint generation
 - `examples/` — Example MIDI files and usage walkthroughs
 - `docs/` — Architecture and design notes
 
 ## 🚀 Goals
 
-- Showcase polyglot coding (Go + Node.js)
+- Showcase polyglot coding (Go + Node.js + Python)
 - Highlight MIDI processing expertise
 - Offer useful open-source tools for musicians and developers
 

@@ -1,3 +1,10 @@
+# Node
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+dist/
+
 # Logs
 logs
 *.log
