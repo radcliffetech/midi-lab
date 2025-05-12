@@ -1,0 +1,5 @@
+music21
+mido 
+python-rtmidi
+flask
+pytest
