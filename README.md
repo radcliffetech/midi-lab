@@ -1,5 +1,7 @@
 # 🎛️ Jeffrey's MIDI Lab
 
+![CI](https://github.com/radcliffetech/midi-lab/actions/workflows/ci.yml/badge.svg)
+
 A collection of MIDI tools written in Go and Node.js for converting, transforming, and generating MIDI data.
 
 Includes converters, servers, visualizers, and more.
