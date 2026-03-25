@@ -1,4 +1,5 @@
 import { getNoteName } from './lib/midi-utils';
+import { parseMidiMessage } from './lib/midi-message';
 
 const select = document.getElementById('midi-select') as HTMLSelectElement;
 const startStopBtn = document.getElementById('start-stop') as HTMLButtonElement;
@@ -20,12 +21,10 @@ function log(device: string, message: string) {
   row.appendChild(timeCell);
   tbody.insertBefore(row, tbody.firstChild);
 
-  // Fade out after 5 seconds
   setTimeout(() => {
     row.classList.add('fade-out');
   }, 5000);
 
-  // Remove after 10 seconds
   setTimeout(() => {
     row.remove();
   }, 10000);
@@ -88,7 +87,6 @@ function populateInputOptions(access: MIDIAccess) {
     select.appendChild(opt);
   });
 
-  // Auto-select and register first input if available
   if (inputs.length > 0) {
     selectInputById(inputs[0].id, access);
   }
@@ -118,20 +116,19 @@ startStopBtn.addEventListener('click', () => {
     startStopBtn.textContent = 'Stop';
     updateStatus(`🎛 Listening to: ${currentInput.name}`);
     currentInput.onmidimessage = (e) => {
-      if (!e.data || e.data.length < 3) return;
-      const [status, data1, data2] = e.data;
-      const command = status & 0xf0;
-      let noteInfo = '';
+      const msg = parseMidiMessage(e.data);
+      if (!msg) return;
 
-      if (command === 0x90 && data2 > 0) {
-        noteInfo = `Note On ${getNoteName(data1)} (velocity: ${data2})`;
-      } else if (command === 0x80 || (command === 0x90 && data2 === 0)) {
-        noteInfo = `Note Off ${getNoteName(data1)}`;
+      let noteInfo = '';
+      if (msg.command === 'note_on') {
+        noteInfo = `Note On ${getNoteName(msg.note)} (velocity: ${msg.velocity})`;
+      } else if (msg.command === 'note_off') {
+        noteInfo = `Note Off ${getNoteName(msg.note)}`;
       }
 
       const logMessage = noteInfo
         ? `🎶 ${noteInfo}`
-        : `Status: ${status.toString(16)}, Data1: ${data1}, Data2: ${data2}`;
+        : `Status: ${e.data![0].toString(16)}, Data1: ${msg.note}, Data2: ${msg.velocity}`;
 
       log(currentInput?.name || 'unknown', logMessage);
     };

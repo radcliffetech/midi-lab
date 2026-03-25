@@ -14,16 +14,13 @@ describe('detectKey', () => {
 
     test('identifies G Minor - real piece example', () => {
         const result = detectKey(gMinorExampleRow);
-        console.log(`Detected key for G Minor test: ${result.key}, confidence: ${result.confidence}`);
         expect(result.key).toBe('F Minor');
     });
 
     test('identifies C Minor - real piece example', () => {
         const result = detectKey(cMinorExampleRow);
-        console.log(`Detected key for C Minor test: ${result.key}, confidence: ${result.confidence}`);
         expect(result.key).toBe('C Minor');
     });
-
 
     test('identifies F Minor - synthetic example', () => {
         const fMinorRow = [
@@ -32,7 +29,6 @@ describe('detectKey', () => {
             0, 25, 35, 0  // G#, A, A#
         ];
         const result = detectKey(fMinorRow);
-        console.log(`Detected key for F Minor test: ${result.key}, confidence: ${result.confidence}`);
         expect(result.key).toBe('F Minor');
     });
 
@@ -95,7 +91,6 @@ describe('rotateForward and rotateBackward', () => {
 });
 
 describe('correlate', () => {
-    const majorProfile = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
     const minorProfile = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 
     test('returns correct correlation coefficient', () => {
@@ -115,14 +110,19 @@ describe('correlate', () => {
     test("special case to find bugs", () => {
         const dMinor = [20, 20, 100, 0, 50, 80, 0, 0, 0, 90, 50, 0];
         const aSharpMajor = [0, 80, 0, 0, 90, 0, 50, 0, 20, 100, 0, 50];
-    
+
         const result1 = correlate(dMinor, minorProfile);
         const result2 = correlate(aSharpMajor, minorProfile);
-    
-        console.log("RESULTS", "d minor =>", result1, "a# major =>", result2);
-    
-        // Now it makes sense: dMinor should correlate better to minorProfile
+
         expect(result1).toBeGreaterThan(result2);
+    });
+
+    test('returns 0 for zero-variance arrays', () => {
+        const constant = [5, 5, 5, 5, 5];
+        const normal = [1, 2, 3, 4, 5];
+        expect(correlate(constant, normal)).toBe(0);
+        expect(correlate(normal, constant)).toBe(0);
+        expect(correlate(constant, constant)).toBe(0);
     });
 });
 
@@ -159,5 +159,29 @@ describe('detectChord', () => {
 
     test('returns null for unrecognized combinations', () => {
         expect(detectChord([60, 62, 65])).toBeNull();
+    });
+
+    test('detects augmented chords', () => {
+        expect(detectChord([60, 64, 68])).toBe('C Augmented');
+    });
+
+    test('detects sus2 chords', () => {
+        expect(detectChord([60, 62, 67])).toBe('C Sus2');
+    });
+
+    test('detects sus4 chords', () => {
+        expect(detectChord([60, 65, 67])).toBe('C Sus4');
+    });
+
+    test('detects major 7 chords', () => {
+        expect(detectChord([60, 64, 67, 71])).toBe('C Major 7');
+    });
+
+    test('detects dominant 7 chords', () => {
+        expect(detectChord([60, 64, 67, 70])).toBe('C Dominant 7');
+    });
+
+    test('returns null for empty array', () => {
+        expect(detectChord([])).toBeNull();
     });
 });
