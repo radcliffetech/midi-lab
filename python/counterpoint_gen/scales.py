@@ -23,6 +23,7 @@ SCALE_TYPES = {
 
 
 def get_scale_info(key_name, scale_type):
+    """Return notes, MIDI numbers, and intervals for a given key and scale type."""
     scale_class = SCALE_TYPES.get(scale_type)
     if not scale_class:
         raise ValueError(f"Unknown scale type: {scale_type}. Available: {list(SCALE_TYPES.keys())}")
@@ -52,6 +53,7 @@ def get_scale_info(key_name, scale_type):
 
 
 def detect_scales(note_names):
+    """Detect which scales contain all of the given notes."""
     pitches = [pitch.Pitch(n) for n in note_names]
     pitch_classes = sorted(set(p.pitchClass for p in pitches))
 
@@ -72,6 +74,7 @@ def detect_scales(note_names):
 
 
 def scale_to_midi(key_name, scale_type):
+    """Generate a MIDI file of the given scale and return the temp file path."""
     tonic = pitch.Pitch(key_name)
     sc = SCALE_TYPES[scale_type](tonic)
     pitches = sc.getPitches(tonic, tonic.transpose(12))

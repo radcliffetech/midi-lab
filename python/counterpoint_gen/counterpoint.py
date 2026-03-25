@@ -14,17 +14,26 @@ CONSONANT_INTERVALS = ['m3', 'M3', 'P5', 'm6', 'M6', 'P8']
 
 
 def is_consonant(cantus_note, counter_note):
+    """Check whether the interval between two notes is consonant."""
     intvl = interval.Interval(noteStart=cantus_note, noteEnd=counter_note)
     return intvl.simpleName in CONSONANT_INTERVALS
 
 
 def generate_counterpoint(cantus_firmus):
+    """Generate first-species counterpoint above a cantus firmus.
+
+    For each note in the cantus firmus, finds the first consonant note
+    within 20 semitones above it.
+    """
     counterpoint = []
     for cf_note in cantus_firmus:
         candidates = []
         for semitone_offset in range(0, 20):
+            midi_val = cf_note.pitch.midi + semitone_offset
+            if midi_val > 127:
+                break
             cp_note = note.Note()
-            cp_note.pitch = pitch.Pitch(cf_note.pitch.midi + semitone_offset)
+            cp_note.pitch = pitch.Pitch(midi_val)
             if is_consonant(cf_note, cp_note):
                 candidates.append(cp_note)
         if not candidates:
@@ -34,6 +43,7 @@ def generate_counterpoint(cantus_firmus):
 
 
 def play_realtime(cantus_notes, counterpoint_notes, port_name=None, duration=0.5, velocity=64):
+    """Play cantus firmus and counterpoint simultaneously via a MIDI output port."""
     if port_name is None:
         ports = mido.get_output_names()
         if not ports:

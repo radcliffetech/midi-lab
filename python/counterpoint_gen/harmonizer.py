@@ -1,5 +1,5 @@
 from flask import Blueprint, request, send_file, jsonify
-from music21 import note, stream, pitch, key as m21key, chord, roman, harmony
+from music21 import note, stream, pitch, key as m21key
 import tempfile
 import os
 import logging
@@ -49,16 +49,20 @@ def _check_parallels(prev_voices, curr_voices):
             prev_interval = abs(prev_voices[i] - prev_voices[j]) % 12
             curr_interval = abs(curr_voices[i] - curr_voices[j]) % 12
             if prev_interval == curr_interval and prev_interval in (0, 7):
-                prev_motion_i = curr_voices[i] - prev_voices[i]
-                prev_motion_j = curr_voices[j] - prev_voices[j]
-                if prev_motion_i != 0 and prev_motion_j != 0:
-                    if (prev_motion_i > 0) == (prev_motion_j > 0):
+                motion_i = curr_voices[i] - prev_voices[i]
+                motion_j = curr_voices[j] - prev_voices[j]
+                if motion_i != 0 and motion_j != 0:
+                    if (motion_i > 0) == (motion_j > 0):
                         return True
     return False
 
 
 def harmonize_melody(melody_names, key_name="C"):
-    """Generate a 4-part harmonization for a given melody and key."""
+    """Generate a four-part SATB harmonization for a given melody and key.
+
+    Assigns the melody to soprano, selects chord tones for alto/tenor/bass
+    using a simplified functional harmony model, and avoids parallel fifths/octaves.
+    """
     k = m21key.Key(key_name)
     tonic_pc = pitch.Pitch(key_name).pitchClass
 

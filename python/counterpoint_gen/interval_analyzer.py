@@ -6,11 +6,16 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint("interval_analyzer", __name__)
 
-CONSONANT_INTERVALS = {'m3', 'M3', 'P5', 'm6', 'M6', 'P8', 'P1'}
+CONSONANT_INTERVALS = {'m3', 'M3', 'P5', 'm6', 'M6', 'P8'}
 STEP_INTERVALS = {'m2', 'M2'}
 
 
 def analyze_melody(note_names):
+    """Analyze a melody's intervals, returning classifications and statistics.
+
+    Returns interval sequence, consonance/dissonance classification,
+    and aggregate statistics (largest leap, stepwise motion %, most common interval).
+    """
     if len(note_names) < 2:
         return {
             "intervals": [],
