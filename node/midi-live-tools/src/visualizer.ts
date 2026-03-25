@@ -1,13 +1,14 @@
+import { parseMidiMessage } from './lib/midi-message';
+import { BLACK_KEY_PITCH_CLASSES, PIANO_MIDI_START, PIANO_MIDI_END } from './lib/midi-constants';
+
 const keyboard = document.getElementById('keyboard')!;
 
-// Create keys (MIDI note numbers 21–108)
 const keyMap = new Map<number, HTMLElement>();
-const blackKeys = [1, 3, 6, 8, 10]; // Relative to octave start
 
-for (let note = 21; note <= 108; note++) {
+for (let note = PIANO_MIDI_START; note <= PIANO_MIDI_END; note++) {
   const key = document.createElement('div');
   key.classList.add('key');
-  if (blackKeys.includes(note % 12)) {
+  if (BLACK_KEY_PITCH_CLASSES.includes(note % 12 as typeof BLACK_KEY_PITCH_CLASSES[number])) {
     key.classList.add('black');
   }
   key.dataset.note = note.toString();
@@ -15,7 +16,17 @@ for (let note = 21; note <= 108; note++) {
   keyMap.set(note, key);
 }
 
-// MIDI setup
+function handleMIDIMessage(e: MIDIMessageEvent) {
+  const msg = parseMidiMessage(e.data);
+  if (!msg) return;
+
+  if (msg.command === 'note_on') {
+    keyMap.get(msg.note)?.classList.add('active');
+  } else if (msg.command === 'note_off') {
+    keyMap.get(msg.note)?.classList.remove('active');
+  }
+}
+
 async function initMIDI() {
   try {
     const access = await navigator.requestMIDIAccess();
@@ -29,21 +40,6 @@ async function initMIDI() {
     };
   } catch (err) {
     console.error('MIDI init error', err);
-  }
-}
-
-function handleMIDIMessage(event: MIDIMessageEvent) {
-  const data = event.data;
-  if (!data || data.length < 3) return;
-  const [status, note, velocity] = data;
-  const command = status & 0xf0;
-
-  if (command === 0x90 && velocity > 0) {
-    // Note On
-    keyMap.get(note)?.classList.add('active');
-  } else if (command === 0x80 || (command === 0x90 && velocity === 0)) {
-    // Note Off
-    keyMap.get(note)?.classList.remove('active');
   }
 }
 

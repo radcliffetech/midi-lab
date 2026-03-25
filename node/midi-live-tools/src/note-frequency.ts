@@ -1,5 +1,7 @@
 import Chart from 'chart.js/auto';
 import { detectKey } from './lib/midi-utils';
+import { parseMidiMessage } from './lib/midi-message';
+import { aggregatePitchClasses } from './lib/music-theory';
 
 const ctx = document.getElementById('noteChart') as HTMLCanvasElement;
 const noteCounts = new Array(128).fill(0);
@@ -13,7 +15,7 @@ const chart = new Chart(ctx, {
             label: 'Note Count',
             data: noteCounts,
             backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        }]  
+        }]
     },
     options: {
         responsive: true,
@@ -34,25 +36,18 @@ const chart = new Chart(ctx, {
 });
 
 function handleMIDIMessage(e: MIDIMessageEvent) {
-    if (!e.data || e.data.length < 3) return;
-    const [status, note, velocity] = e.data;
-    const cmd = status & 0xf0;
+    const msg = parseMidiMessage(e.data);
+    if (!msg || msg.command !== 'note_on') return;
 
-    if (cmd === 0x90 && velocity > 0) {
-        noteCounts[note]++;
-        chart.update();
+    noteCounts[msg.note]++;
+    chart.update();
 
-        const pitchClassCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        for (let i = 0; i < 128; i++) {
-          pitchClassCounts[i % 12] += noteCounts[i];
-        }
-        
-        const { key, confidence } = detectKey(pitchClassCounts);
-        
-        document.getElementById('keyOutput')!.textContent = key;
-        document.getElementById('confidenceOutput')!.textContent = confidence.toFixed(2);
-        document.getElementById('pitchClassesOutput')!.textContent = `[${pitchClassCounts.join(', ')}]`;
-    }
+    const pitchClassCounts = aggregatePitchClasses(noteCounts);
+    const { key, confidence } = detectKey(pitchClassCounts);
+
+    document.getElementById('keyOutput')!.textContent = key;
+    document.getElementById('confidenceOutput')!.textContent = confidence.toFixed(2);
+    document.getElementById('pitchClassesOutput')!.textContent = `[${pitchClassCounts.join(', ')}]`;
 }
 
 async function initMIDI() {

@@ -1,19 +1,19 @@
-// chord-analyzer.ts
+import { detectChord, midiNoteName } from './lib/midi-utils';
+import { parseMidiMessage } from './lib/midi-message';
+import { BLACK_KEY_PITCH_CLASSES, PIANO_MIDI_START, PIANO_MIDI_END } from './lib/midi-constants';
+
 const keyboard = document.getElementById('keyboard')!;
 const activeNotesDisplay = document.getElementById('active-notes')!;
 const chordDisplay = document.getElementById('chord-display')!;
 const statusDisplay = document.getElementById('status')!;
 
-import { detectChord, midiNoteName } from './lib/midi-utils';
-
 const keyMap = new Map<number, HTMLElement>();
 const activeNotes = new Set<number>();
-const blackKeys = [1, 3, 6, 8, 10];
 
-for (let note = 21; note <= 108; note++) {
+for (let note = PIANO_MIDI_START; note <= PIANO_MIDI_END; note++) {
   const key = document.createElement('div');
   key.classList.add('key');
-  if (blackKeys.includes(note % 12)) key.classList.add('black');
+  if (BLACK_KEY_PITCH_CLASSES.includes(note % 12 as typeof BLACK_KEY_PITCH_CLASSES[number])) key.classList.add('black');
   key.dataset.note = note.toString();
   keyboard.appendChild(key);
   keyMap.set(note, key);
@@ -27,17 +27,15 @@ function updateDisplay() {
 }
 
 function handleMIDIMessage(e: MIDIMessageEvent) {
-  const data = e.data;
-  if (!data || data.length < 3) return;
-  const [status, note, vel] = data;
-  const cmd = status & 0xf0;
+  const msg = parseMidiMessage(e.data);
+  if (!msg) return;
 
-  if (cmd === 0x90 && vel > 0) {
-    activeNotes.add(note);
-    keyMap.get(note)?.classList.add('active');
-  } else if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
-    activeNotes.delete(note);
-    keyMap.get(note)?.classList.remove('active');
+  if (msg.command === 'note_on') {
+    activeNotes.add(msg.note);
+    keyMap.get(msg.note)?.classList.add('active');
+  } else if (msg.command === 'note_off') {
+    activeNotes.delete(msg.note);
+    keyMap.get(msg.note)?.classList.remove('active');
   }
   updateDisplay();
 }
