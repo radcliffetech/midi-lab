@@ -19,6 +19,7 @@ Each tool is a standalone HTML+TS+CSS interface:
 | 🌀 Spiral Viewer   | Animated spiral note display with fading ghost trails |
 | 🥁 Drum Pad        | Clickable drum grid that sends live MIDI output      |
 | 📊 Histogram       | Live note frequency histogram from input stream     |
+| 🎵 Chord Analyzer  | Real-time chord and key detection from MIDI input    |
 
 ### ⚡ Setup and Run
 

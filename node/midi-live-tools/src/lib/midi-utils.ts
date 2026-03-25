@@ -18,16 +18,16 @@ export function detectChord(notes: number[]): string | null {
   const pitchClasses = [...new Set(notes.map((n) => n % 12))].sort((a, b) => a - b);
 
   const chordTypes: [string, number[]][] = [
+    ['Major 7', [0, 4, 7, 11]],
+    ['Minor 7', [0, 3, 7, 10]],
+    ['Dominant 7', [0, 4, 7, 10]],
+    ['Half-diminished 7', [0, 3, 6, 10]],
     ['Major', [0, 4, 7]],
     ['Minor', [0, 3, 7]],
     ['Diminished', [0, 3, 6]],
     ['Augmented', [0, 4, 8]],
     ['Sus2', [0, 2, 7]],
     ['Sus4', [0, 5, 7]],
-    ['Major 7', [0, 4, 7, 11]],
-    ['Minor 7', [0, 3, 7, 10]],
-    ['Dominant 7', [0, 4, 7, 10]],
-    ['Half-diminished 7', [0, 3, 6, 10]],
   ];
 
   for (let root = 0; root < 12; root++) {
@@ -78,6 +78,7 @@ export function correlate(a: number[], b: number[]): number {
     denomB += devB * devB;
   }
 
+  if (denomA === 0 || denomB === 0) return 0;
   return numerator / Math.sqrt(denomA * denomB);
 }
 

@@ -1,5 +1,6 @@
 music21
-mido 
+mido
 python-rtmidi
 flask
 pytest
+ruff
